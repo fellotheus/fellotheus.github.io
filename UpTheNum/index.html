@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>UpTheNum</title>
+  <title>UpTheNum II</title>
   <style>
   body {
     background-color: #002244;
@@ -21,6 +21,10 @@
   p {
     color: white;
     font-family: Verdana;
+  }
+  button {
+    background-color: white;
+    color: black;
   }
   .num-display {
     font-size: 30px;
@@ -75,6 +79,15 @@
     width:200px;
     height:90px;
   }
+  .prestigeButton {
+    padding: 9px;
+    padding-top:25px;
+    border-radius:5px;
+    width:200px;
+    height:120px;
+    color: white;
+    background-color: black;
+  }
   .energyButton {
     padding: 9px;
     padding-top:25px;
@@ -88,6 +101,9 @@
   }
   .upgradeText {
     font-size:15px;
+  }
+  .hidden {
+    visibility: hidden;
   }
   #tabSwitcher {
     background-color:#0112;
@@ -108,7 +124,7 @@
  </style>
 </head>
 <body>
-  <h1 class="center">UpTheNum II Alpha 7</h1>
+
 <script>//Code snippets and templates from Decimal.js
 
 ;(function (globalScope) {
@@ -1703,6 +1719,51 @@
   }
 })(this);
 </script>
+
+  <h1 class="center">UpTheNum II Alpha 8</h1>
+  <div class="center">
+    <p class="center num-display" id="num-display">Wheee!</p>
+    <p class="center" id="npsCount"></p>
+    <div id="tabSwitcher">
+      <button type="button" onclick="tab(0)" class="tabButton">Generators</button>
+      <button type="button" onclick="tab(1)" class="tabButton">Upgrades</button>
+      <button type="button" onclick="tab(2)" class="tabButton">Saving</button>
+      <button type="button" onclick="tab(3)" class="tabButton">Changelog</button>
+    </div>
+    <div class="tab" id="tab0">
+      <button type="button" onclick="increase()" class="mainbutton">Increase the number</button>
+      <br>
+      <button type="button" onclick="buy.gen(0)" class="genButton" id="gen1">Buy Generator 1</button><br>
+      <button type="button" onclick="buy.gen(1)" class="genButton" id="gen2">Buy Generator 2</button><br>
+      <button type="button" onclick="buy.gen(2)" class="genButton" id="gen3">Buy Generator 3</button><br>
+      <button type="button" onclick="buy.gen(3)" class="genButton" id="gen4">Buy Generator 4</button><br>
+      <button type="button" onclick="prestige()" class="prestigeButton" id="prestigeButton"><span class="upgradeText">Prestige</span><br><br><span class="upgradeCost" id="prestigeBottomText">Requires 1e6 number</span></button>
+    </div>
+    <div class="tab" id="tab1" style="display: none">
+      <button type="button" onclick="buy.upgrade(0)" class="upgradeButton" id="up1"><span class="upgradeText">Number production x1.5</span><br><br><span class="upgradeCost" id="up1cost">Costme: 200</span></button>
+      <button type="button" onclick="buy.upgrade(1)" class="upgradeButton" id="up2"><span class="upgradeText">Generator 1 efficiency x2</span><br><br><span class="upgradeCost" id="up2cost">Cost: 800</span></button>
+      <button type="button" onclick="buy.upgrade(2)" class="upgradeButton" id="up3"><span class="upgradeText">Generator 2 efficiency x2</span><br><br><span class="upgradeCost" id="up3cost">Cost: 3000</span></button>
+      <button type="button" onclick="buy.upgrade(3)" class="upgradeButton" id="up4"><span class="upgradeText">Generator 3 efficiency x2</span><br><br><span class="upgradeCost" id="up4cost">Cost: 20000</span></button>
+      <button type="button" onclick="buy.upgrade(4)" class="upgradeButton" id="up5"><span class="upgradeText">Generator 4 efficiency x2</span><br><br><span class="upgradeCost" id="up5cost">Cost: 150000</span></button>
+      <br>
+      <button type="button" onclick="buy.energy()" class="energyButton" id="energyBtn"><span class="upgradeText">Buy Energy (multiply production by 2)</span><br><br><span class="upgradeCost" id="energyCost">Cost: 1000</span><br><span class="upgradeCost" id="energyOwned">Owned: 0</span></button>
+    </div>
+    <div class="tab" id="tab2" style="display: none">
+      <button type="button" onclick="save()">Save</button>
+      <button type="button" onclick="load()">Load</button>
+    </div>
+    <div class="tab" id="tab3" style="display: none">
+      <h2>Changelog</h2>
+      <h3>Alpha 8 (2024-02-10)</h3>
+      <p>Added the first prestige layer. Expect a lot of changes.<br>Fixed the UI for certain browsers.<br>Rebalanced things a bit.</p>
+      <h3>Alpha 7 (2024-01-29)</h3>
+      <p>The game now uses OmegaNum.<br>Added three new upgrades.<br>Fixed save compatibility system to prevent future issues.</p>
+      <h3>Alpha 6 (2023-12-22)</h3>
+      <p>Added energy mechanic. <br> Round function now keeps precision. <br> The number display is now being rounded. <br> Added changelog.</p>
+<h3>Alpha 5 (2023-06-22)</h3>
+      <p>Added a multiplier variable to each generator.<br> Upgrade costs are now automatically updated (useless for now).<br> Fixed number rounding.</p>
+    </div>
+  </div>
   <script>
     /*
             DEFINING
@@ -1711,6 +1772,7 @@
     var game = {
       number: new OmegaNum(0),
       numberPerSecond: new OmegaNum(0),
+      photons: new OmegaNum(0),
       generators: [
         {cost: new OmegaNum(20),owned: new OmegaNum(0),scale: new OmegaNum(1.15),id: "gen1",power: new OmegaNum(0.2),base: new OmegaNum(20),mult: new OmegaNum(1)},
         {cost: new OmegaNum(200),owned: new OmegaNum(0),scale: new OmegaNum(1.15), id: "gen2",power: new OmegaNum(2), base: new OmegaNum(200),mult: new OmegaNum(1)},
@@ -1718,13 +1780,13 @@
         {cost: new OmegaNum(12500),owned: new OmegaNum(0),scale: new OmegaNum(1.15), id: "gen4",power: new OmegaNum(40), base: new OmegaNum(12500),mult: new OmegaNum(1)}
       ],
       upgrades: [
-        {cost: new OmegaNum(200),owned: 0,id: "up1"},
-        {cost: new OmegaNum(800),owned: 0,id: "up2"},
-        {cost: new OmegaNum(3000),owned: 0,id: "up3"},
-        {cost: new OmegaNum(20000),owned: 0,id: "up4"},
-        {cost: new OmegaNum(150000),owned: 0,id: "up5"}
+        {cost: new OmegaNum(200),owned: 0,id: "up1", permanent: false},
+        {cost: new OmegaNum(800),owned: 0,id: "up2", permanent: false},
+        {cost: new OmegaNum(3000),owned: 0,id: "up3", permanent: false},
+        {cost: new OmegaNum(22000),owned: 0,id: "up4", permanent: false},
+        {cost: new OmegaNum(150000),owned: 0,id: "up5", permanent: false}
       ],
-      energy: {cost:new OmegaNum(10000),owned:new OmegaNum(0),scale:new OmegaNum(5),base:new OmegaNum(10000)},
+      energy: {cost:new OmegaNum(10000),owned:new OmegaNum(0),scale:new OmegaNum(10),base:new OmegaNum(10000)},
       generatorBoost: new OmegaNum(1)
     };
     var buy = {
@@ -1751,6 +1813,7 @@
       generatorBoost: function() {
         var answer = new OmegaNum(1);
         if (game.upgrades[0].owned) {answer = answer.mul(1.5);}
+        answer = answer.mul(game.photons.add(1));
         game.generatorBoost = answer;
       },
       Click: function() {
@@ -1764,7 +1827,7 @@
         game.energy.cost = game.energy.base.mul(game.energy.scale.pow(game.energy.owned)).round();
       },
       generatorProduction: function(id) {
-        var answer = game.generators[id].power.mul(game.generatorBoost.mul(game.generators[id].mult));
+        let answer = game.generators[id].power.mul(game.generatorBoost.mul(game.generators[id].mult));
         if (id == 0 && game.upgrades[1].owned) {
 	  answer = answer.mul(2);
         }
@@ -1778,7 +1841,27 @@
           answer = answer.mul(2);
         }
 	return answer;
+      },
+      photonsOnPrestige: function() {
+        let answer = game.number.div(2000000).sqrt().sub(1);
+        return answer;
       }
+    }
+    function prestigeReset() {
+      game.number = OmegaNum(0);
+      for (var i in game.generators) {
+         game.generators[i].owned = OmegaNum(0);
+      }
+      for (var i in game.upgrades) {
+         if (!game.upgrades[i].permanent) {
+            game.upgrades[i].owned = 0;
+         }
+      }
+    }
+    function prestige() {
+      if (game.number.lt(2000000)) {return}
+      game.photons = game.photons.add(calc.photonsOnPrestige());
+      prestigeReset();
     }
 
     //EXTRA FUNCTIONS
@@ -1857,6 +1940,7 @@
 
       calc.generatorBoost();
       for (var i in game.generators) {  //iterate on generators
+        calc.generatorCost(i);
         current = game.generators[i]
         get(current.id).innerHTML = "Buy Generator " + (parseInt(i)+1) + " for " + game.generators[i].cost.toPrecision(4) + " | Owned: " + game.generators[i].owned.toPrecision(4) + " | Produces "+calc.generatorProduction(i).toPrecision(4)+" per second"; //update generator
         if (current.cost.gt(game.number)) { //CANNOT BUY
@@ -1898,55 +1982,23 @@
       get("energyOwned").innerHTML = "Owned: " + game.energy.owned.toPrecision(4);
 
       game.numberPerSecond = game.numberPerSecond.mul(OmegaNum.pow(2,game.energy.owned));
-      
+      if (game.number.gte(2000000)) {
+        get("prestigeBottomText").innerHTML = "Gain " + calc.photonsOnPrestige().toPrecision(3) + " photons" + "<br> You currently have " + game.photons.toFixed(4) + " photons."
+      } else {
+        get("prestigeBottomText").innerHTML = "Requires 2e6 number" + "<br> You currently have " + game.photons.toFixed(4) + " photons."
+      }
+      if (game.number.gte(100000)) {
+        get("prestigeButton").classList.remove("hidden")
+      } else {
+        get("prestigeButton").classList.add("hidden")
+      }
 
       game.number = game.number.add(game.numberPerSecond.div(20.0));
-      document.getElementById("npsCount").innerHTML = "+<b>"+game.numberPerSecond.toPrecision(3)+"</b> per second";
+      get("npsCount").innerHTML = "+<b>"+game.numberPerSecond.toPrecision(4)+"</b> per second";
       game.numberPerSecond = new OmegaNum(0);
  
     }
     setInterval(MainLoop, 50);
   </script>
-
-  <div class="center">
-    <p class="center num-display" id="num-display">Wheee!</p>
-    <p class="center" id="npsCount"></p>
-    <div id="tabSwitcher">
-      <button type="button" onclick="tab(0)" class="tabButton">Generators</button>
-      <button type="button" onclick="tab(1)" class="tabButton">Upgrades</button>
-      <button type="button" onclick="tab(2)" class="tabButton">Saving</button>
-      <button type="button" onclick="tab(3)" class="tabButton">Changelog</button>
-    </div>
-    <div class="tab" id="tab0">
-      <button type="button" onclick="increase()" class="mainbutton">Increase the number</button>
-      <br>
-      <button type="button" onclick="buy.gen(0)" class="genButton" id="gen1">Buy Generator 1</button><br>
-      <button type="button" onclick="buy.gen(1)" class="genButton" id="gen2">Buy Generator 2</button><br>
-      <button type="button" onclick="buy.gen(2)" class="genButton" id="gen3">Buy Generator 3</button><br>
-      <button type="button" onclick="buy.gen(3)" class="genButton" id="gen4">Buy Generator 4</button><br>
-    </div>
-    <div class="tab" id="tab1" style="display: none">
-      <button type="button" onclick="buy.upgrade(0)" class="upgradeButton" id="up1"><span class="upgradeText">Number production x1.5</span><br><br><span class="upgradeCost" id="up1cost">Costme: 200</span></button>
-      <button type="button" onclick="buy.upgrade(1)" class="upgradeButton" id="up2"><span class="upgradeText">Generator 1 efficiency x2</span><br><br><span class="upgradeCost" id="up2cost">Cost: 800</span></button>
-      <button type="button" onclick="buy.upgrade(2)" class="upgradeButton" id="up3"><span class="upgradeText">Generator 2 efficiency x2</span><br><br><span class="upgradeCost" id="up3cost">Cost: 3000</span></button>
-      <button type="button" onclick="buy.upgrade(3)" class="upgradeButton" id="up4"><span class="upgradeText">Generator 3 efficiency x2</span><br><br><span class="upgradeCost" id="up4cost">Cost: 20000</span></button>
-      <button type="button" onclick="buy.upgrade(4)" class="upgradeButton" id="up5"><span class="upgradeText">Generator 4 efficiency x2</span><br><br><span class="upgradeCost" id="up5cost">Cost: 150000</span></button>
-      <br>
-      <button type="button" onclick="buy.energy()" class="energyButton" id="energyBtn"><span class="upgradeText">Buy Energy (multiply production by 2)</span><br><br><span class="upgradeCost" id="energyCost">Cost: 1000</span><br><span class="upgradeCost" id="energyOwned">Owned: 0</span></button>
-    </div>
-    <div class="tab" id="tab2" style="display: none">
-      <button type="button" onclick="save()">Save</button>
-      <button type="button" onclick="load()">Load</button>
-    </div>
-    <div class="tab" id="tab3" style="display: none">
-      <h2>Changelog</h2>
-      <h3>Alpha 7 (2024-01-29)</h3>
-      <p>The game now uses OmegaNum.<br>Added three new upgrades.<br>Fixed save compatibility issues.</p>
-      <h3>Alpha 6 (2023-12-22)</h3>
-      <p>Added energy mechanic. <br> Rounding numbers now keep the same digits. <br> Rounded the number display. <br> Added changelog.</p>
-<h3>Alpha 5 (2023-06-22)</h3>
-      <p>Added generator multipliers.<br> Upgrade costs are now automatically updated (no effect for now).<br> Fixed number rounding.</p>
-    </div>
-  </div>
 </body>
 </html> 
