@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      function updateTime() {document.getElementById("time").innerHTML = "Percentage to the end of 32 bit Unix time: " + ((Date.now() / 1000) / 2**31 * 100) + "%"}
+      setInterval(updateTime,10);
+    </script>
+  </head>
+  <body>
+
+    <h1 id="time">j</h1>
+  </body>
+</html>
