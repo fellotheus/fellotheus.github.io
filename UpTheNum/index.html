@@ -85,6 +85,8 @@
     border-radius:5px;
     width:200px;
     height:120px;
+  }
+  .prestige {
     color: white;
     background-color: black;
   }
@@ -103,7 +105,7 @@
     font-size:15px;
   }
   .hidden {
-    visibility: hidden;
+    display: none;
   }
   #tabSwitcher {
     background-color:#0112;
@@ -1720,7 +1722,7 @@
 })(this);
 </script>
 
-  <h1 class="center">UpTheNum II Alpha 8</h1>
+  <h1 class="center">UpTheNum II Alpha 9</h1>
   <div class="center">
     <p class="center num-display" id="num-display">Wheee!</p>
     <p class="center" id="npsCount"></p>
@@ -1729,15 +1731,16 @@
       <button type="button" onclick="tab(1)" class="tabButton">Upgrades</button>
       <button type="button" onclick="tab(2)" class="tabButton">Saving</button>
       <button type="button" onclick="tab(3)" class="tabButton">Changelog</button>
+      <button type="button" onclick="tab(4)" class="tabButton prestige" id="prestigeTabButton">Prestige</button>
     </div>
     <div class="tab" id="tab0">
-      <button type="button" onclick="increase()" class="mainbutton">Increase the number</button>
+      <button type="button" onclick="increase()" class="mainbutton">Increase the number by 1</button>
       <br>
       <button type="button" onclick="buy.gen(0)" class="genButton" id="gen1">Buy Generator 1</button><br>
       <button type="button" onclick="buy.gen(1)" class="genButton" id="gen2">Buy Generator 2</button><br>
       <button type="button" onclick="buy.gen(2)" class="genButton" id="gen3">Buy Generator 3</button><br>
       <button type="button" onclick="buy.gen(3)" class="genButton" id="gen4">Buy Generator 4</button><br>
-      <button type="button" onclick="prestige()" class="prestigeButton" id="prestigeButton"><span class="upgradeText">Prestige</span><br><br><span class="upgradeCost" id="prestigeBottomText">Requires 1e6 number</span></button>
+      <button type="button" onclick="prestige()" class="prestigeButton prestige" id="prestigeButton"><span class="upgradeText">Prestige</span><br><br><span class="upgradeCost" id="prestigeBottomText">Requires 1e6 number</span></button>
     </div>
     <div class="tab" id="tab1" style="display: none">
       <button type="button" onclick="buy.upgrade(0)" class="upgradeButton" id="up1"><span class="upgradeText">Number production x1.5</span><br><br><span class="upgradeCost" id="up1cost">Costme: 200</span></button>
@@ -1751,9 +1754,12 @@
     <div class="tab" id="tab2" style="display: none">
       <button type="button" onclick="save()">Save</button>
       <button type="button" onclick="load()">Load</button>
+      <button type="button" onclick="clearSave()">Clear Save</button>
     </div>
     <div class="tab" id="tab3" style="display: none">
       <h2>Changelog</h2>
+      <h3>Alpha 9 (2024-02-29)</h3>
+      <p>Added a tab for the new prestige layer.<br>Nerfed the photons boost.<br>Fixed a bug where energy wasn't accounted for in the generator production display.<br>Fixed a bug where energy wasn't reset on prestige.</p>
       <h3>Alpha 8 (2024-02-10)</h3>
       <p>Added the first prestige layer. Expect a lot of changes soon.<br>Fixed the UI for certain browsers.<br>Rebalanced things a bit.</p>
       <h3>Alpha 7 (2024-01-29)</h3>
@@ -1762,6 +1768,9 @@
       <p>Added energy mechanic. <br> Round function now keeps precision. <br> The number display is now being rounded. <br> Added changelog.</p>
 <h3>Alpha 5 (2023-06-22)</h3>
       <p>Added a multiplier variable to each generator.<br> Upgrade costs are now automatically updated (useless for now).<br> Fixed number rounding.</p>
+    </div>
+    <div class="tab" id="prestigeTab" style="display: none">
+      <h2 id="prestigeTabText"></h2>
     </div>
   </div>
   <script>
@@ -1787,7 +1796,8 @@
         {cost: new OmegaNum(150000),owned: 0,id: "up5", permanent: false}
       ],
       energy: {cost:new OmegaNum(10000),owned:new OmegaNum(0),scale:new OmegaNum(10),base:new OmegaNum(10000)},
-      generatorBoost: new OmegaNum(1)
+      generatorBoost: new OmegaNum(1),
+      prestigeCount: 0
     };
     var buy = {
       gen: function(what) {
@@ -1813,7 +1823,8 @@
       generatorBoost: function() {
         var answer = new OmegaNum(1);
         if (game.upgrades[0].owned) {answer = answer.mul(1.5);}
-        answer = answer.mul(game.photons.add(1));
+        answer = answer.mul(OmegaNum.pow(2,game.energy.owned))
+        answer = answer.mul(game.photons.add(1).sqrt());
         game.generatorBoost = answer;
       },
       Click: function() {
@@ -1857,20 +1868,27 @@
             game.upgrades[i].owned = 0;
          }
       }
+      game.energy.owned = OmegaNum(0);
+      
     }
     function prestige() {
       if (game.number.lt(2000000)) {return}
       game.photons = game.photons.add(calc.photonsOnPrestige());
+      game.prestigeCount++;
+      
+      get("prestigeTabButton").classList.remove("hidden");
       prestigeReset();
     }
 
     //EXTRA FUNCTIONS
 
+    var timeSinceLastSave = 0;
+
     function save() {
       localStorage.setItem("save",JSON.stringify(game))
     }
     function transfer(from,to) {
-      let sample = new Object;
+      //let sample = new Object;
       for (i in from) {
         if (typeof(from[i]) == 'object') {
           transfer(from[i], to[i]);
@@ -1882,6 +1900,14 @@
     function load() {
       loaded = JSON.parse(localStorage.getItem("save"));
       transfer(loaded,game);
+      if (game.prestigeCount == 0) {
+        get("prestigeTabButton").classList.add("hidden");
+      } else {
+        get("prestigeTabButton").classList.remove("hidden");
+      }
+    }
+    function clearSave() {
+      localStorage.clear("save");
     }
     function get(what) {
       return document.getElementById(what);
@@ -1919,7 +1945,7 @@
 
 
     function tab(what) {
-      var tabs = ["tab0","tab1","tab2","tab3"]
+      var tabs = ["tab0","tab1","tab2","tab3","prestigeTab"]
       for (i=0;i<tabs.length;i++) {
         get(tabs[i]).style.display = "none";
       }
@@ -1937,12 +1963,12 @@
 
     function MainLoop() {
       updateNumber();
-
+      calc.energyCost();
       calc.generatorBoost();
       for (var i in game.generators) {  //iterate on generators
         calc.generatorCost(i);
         current = game.generators[i]
-        get(current.id).innerHTML = "Buy Generator " + (parseInt(i)+1) + " for " + game.generators[i].cost.toPrecision(4) + " | Owned: " + game.generators[i].owned.toPrecision(4) + " | Produces "+calc.generatorProduction(i).toPrecision(4)+" per second"; //update generator
+        get(current.id).textContent = "Buy Generator " + (parseInt(i)+1) + " for " + game.generators[i].cost.toPrecision(4) + " | Owned: " + game.generators[i].owned.toPrecision(4) + " | Produces "+calc.generatorProduction(i).toPrecision(4)+" per second"; //update generator
         if (current.cost.gt(game.number)) { //CANNOT BUY
           get(current.id).classList.remove("bought")
           get(current.id).classList.remove("canBuy")
@@ -1969,7 +1995,7 @@
           get(current.id).classList.add("canBuy");
           get(current.id).classList.remove("noBuy");
         }
-	get(current.id+"cost").innerHTML = "Cost: "+current.cost.toPrecision(4);
+	get(current.id+"cost").textContent = "Cost: "+current.cost.toPrecision(4);
       }
       if (game.energy.cost.gt(game.number)) {
         get("energyBtn").classList.remove("canBuy");
@@ -1981,24 +2007,38 @@
       get("energyCost").innerHTML = "Cost: " + game.energy.cost.toPrecision(4);
       get("energyOwned").innerHTML = "Owned: " + game.energy.owned.toPrecision(4);
 
-      game.numberPerSecond = game.numberPerSecond.mul(OmegaNum.pow(2,game.energy.owned));
+
+      //update small things
+
       if (game.number.gte(2000000)) {
-        get("prestigeBottomText").innerHTML = "Gain " + calc.photonsOnPrestige().toPrecision(3) + " photons" + "<br> You currently have " + game.photons.toFixed(4) + " photons."
+        get("prestigeBottomText").innerHTML = "Gain " + calc.photonsOnPrestige().toPrecision(3) + " photons" + "<br> You currently have " + game.photons.toPrecision(4) + " photons."
       } else {
-        get("prestigeBottomText").innerHTML = "Requires 2e6 number" + "<br> You currently have " + game.photons.toFixed(4) + " photons."
+        get("prestigeBottomText").innerHTML = "Requires 2e6 number" + "<br> You currently have " + game.photons.toPrecision(4) + " photons."
       }
-      if (game.number.gte(100000)) {
+      if (game.number.gte(100000) || game.prestigeCount != 0) {
         get("prestigeButton").classList.remove("hidden")
       } else {
         get("prestigeButton").classList.add("hidden")
       }
+      get("prestigeTabText").textContent = "You have " + game.photons.toPrecision(4) + " photons, giving you a " + game.photons.add(1).sqrt().toPrecision(4) + "x boost to all generators."
+
+
+      //extra
+
+      timeSinceLastSave += 1/20;
+      if (timeSinceLastSave > 15) {
+        timeSinceLastSave = 0;
+        save();
+      }
 
       game.number = game.number.add(game.numberPerSecond.div(20.0));
       get("npsCount").innerHTML = "+<b>"+game.numberPerSecond.toPrecision(4)+"</b> per second";
-      game.numberPerSecond = new OmegaNum(0);
+      game.numberPerSecond = OmegaNum(0);
  
     }
+
     setInterval(MainLoop, 50);
+    load();
   </script>
 </body>
 </html> 
