@@ -53,7 +53,9 @@ var game = {
   ],
   prestigeUpgrades: [
     { cost: new OmegaNum(1), owned: 0, id: "pup1", permanent: false },
-    { cost: new OmegaNum(6), owned: 0, id: "pup2", permanent: false }
+    { cost: new OmegaNum(6), owned: 0, id: "pup2", permanent: false },
+    { cost: new OmegaNum(10), owned: 0, id: "pup3", permanent: false },
+    { cost: new OmegaNum(12), owned: 0, id: "pup4", permanent: false }
   ],
   energy: {
     cost: new OmegaNum(10000),
@@ -102,7 +104,9 @@ var buy = {
     game.prestigeUpgrades[what].owned = 1;
   },
 };
-var calc = {
+var calc = { 
+  //Returners if used on specific event (e.g. click) or a part of calculation.
+  //Setters if value should update every tick
   generatorBoost: function () {
     var answer = new OmegaNum(1);
     if (game.upgrades[0].owned) {
@@ -133,11 +137,21 @@ var calc = {
     let answer = game.generators[id].power.mul(
       game.generatorBoost.mul(game.generators[id].mult)
     );
-    if (id == 0 && game.upgrades[1].owned) {
-      answer = answer.mul(2);
+    if (id == 0) {
+      if (game.upgrades[1].owned) {
+        answer = answer.mul(2);
+      }
+      if (game.prestigeUpgrades[2].owned) {
+        answer = answer.mul(5);
+      }
     }
-    if (id == 1 && game.upgrades[2].owned) {
-      answer = answer.mul(2);
+    if (id == 1) {
+      if (game.upgrades[2].owned) {
+        answer = answer.mul(2);
+      }
+      if (game.prestigeUpgrades[3].owned) {
+        answer = answer.mul(3);
+      }
     }
     if (id == 2 && game.upgrades[3].owned) {
       answer = answer.mul(2);
@@ -169,7 +183,7 @@ function prestige() {
     return;
   }
 
-  if (!confirm("Are you sure? Prestiging will reset all your previous progress.")) {
+  if (!confirm("Are you sure? Prestiging will reset all your previous progress.\n(I recommend you to be able to gain at least 1-2 photons on your first prestige.)")) {
     return;
   }
 
@@ -187,9 +201,6 @@ function prestige() {
 
 var timeSinceLastSave = 0;
 
-function save() {
-  localStorage.setItem("save", JSON.stringify(game));
-}
 function transfer(from, to) {
   //let sample = new Object;
   for (i in from) {
@@ -200,15 +211,30 @@ function transfer(from, to) {
     }
   }
 }
-function load() {
-  loaded = JSON.parse(localStorage.getItem("save"));
-  transfer(loaded, game);
+
+function save() {
+  localStorage.setItem("save", JSON.stringify(game));
+}
+
+function load(saveFile = JSON.parse(localStorage.getItem("save"))) {
+  transfer(saveFile, game);
   if (game.prestigeCount == 0) {
     get("prestigeTabButton").classList.add("hidden");
   } else {
     get("prestigeTabButton").classList.remove("hidden");
   }
 }
+
+function exportSave() {
+  navigator.clipboard.writeText(JSON.stringify(game));
+}
+
+function importSave() {
+  importedSave = JSON.parse(window.prompt("Paste the save below."));
+  load(importedSave);
+}
+
+
 function clearSave() {
   localStorage.clear("save");
 }

@@ -11,7 +11,7 @@
 
 
 
-  <h1 class="center">UpTheNum II Alpha 10</h1>
+  <h1 class="center">UpTheNum II Alpha 11</h1>
   <div class="center">
     <p class="center num-display" id="num-display">Wheee! [If you see this the game is broken]</p>
     <p class="center" id="npsCount"></p>
@@ -42,11 +42,15 @@
     </div>
     <div class="tab" id="tab2" style="display: none">
       <button type="button" onclick="save()">Save</button>
-      <button type="button" onclick="load()">Load</button>
+      <button type="button" onclick="load()">Load from storage</button>
+      <button type="button" onclick="exportSave()">Export</button>
+      <button type="button" onclick="importSave()">Import</button>
       <button type="button" onclick="clearSave()">Clear Save</button>
     </div>
     <div class="tab" id="tab3" style="display: none">
       <h2>Changelog</h2>
+      <h3>Alpha 11 (2024-05-29)</h3>
+      <p>Added 2 prestige upgrades.<br>You can now import/export your save.</p>
       <h3>Alpha 10 (2024-04-01)</h3>
       <p>Added a design for prestige-related buttons.<br>Added prestige upgrades.</p>
       <h3>Alpha 9 (2024-02-29)</h3>
@@ -64,8 +68,10 @@
       <h2 id="prestigeTabText"></h2>
       <br>
       <div id="prestigeUpgradeContainer">
-        <button type="button" onclick="buy.prestigeUpgrade(0)" class="upgradeButton prestige" id="pup1"><span class="upgradeText">Keep the first upgrade on reset</span><br><br><span class="upgradeCost" id="pup1cost">Cost: 800</span></button>
-        <button type="button" onclick="buy.prestigeUpgrade(1)" class="upgradeButton prestige" id="pup2"><span class="upgradeText">Generators are boosted by total generators. sqrt((n/30)+1)</span><br><br><span class="upgradeCost" id="pup2cost">Cost: 800</span></button>
+        <button type="button" onclick="buy.prestigeUpgrade(0)" class="upgradeButton prestige" id="pup1"><span class="upgradeText">Keep the first upgrade on reset</span><br><br><span class="upgradeCost" id="pup1cost"></span></button>
+        <button type="button" onclick="buy.prestigeUpgrade(1)" class="upgradeButton prestige" id="pup2"><span class="upgradeText">Generators are boosted by total generators. sqrt((n/30)+1)</span><br><br><span class="upgradeCost" id="pup2cost"></span></button>
+        <button type="button" onclick="buy.prestigeUpgrade(2)" class="upgradeButton prestige" id="pup3"><span class="upgradeText">Generator 1 efficiency x5</span><br><br><span class="upgradeCost" id="pup3cost">Cost: 800</span></button>
+        <button type="button" onclick="buy.prestigeUpgrade(3)" class="upgradeButton prestige" id="pup4"><span class="upgradeText">Generator 2 efficiency x3</span><br><br><span class="upgradeCost" id="pup4cost">Cost: 800</span></button>
       </div>
     </div>
   </div>
