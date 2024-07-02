@@ -384,8 +384,8 @@ function MainLoop() {
     get("energyBtn").classList.add("canBuy");
     get("energyBtn").classList.remove("noBuy");
   }
-  get("energyCost").innerHTML = "Cost: " + game.energy.cost.toPrecision(4);
-  get("energyOwned").innerHTML = "Owned: " + game.energy.owned.toPrecision(4);
+  get("energyCost").textContent = "Cost: " + game.energy.cost.toPrecision(4);
+  get("energyOwned").textContent = "Owned: " + game.energy.owned.toPrecision(4);
 
   //update small things
 
