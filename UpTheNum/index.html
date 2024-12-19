@@ -11,16 +11,16 @@
 
 
 
-  <h1 class="center">UpTheNum II Alpha 11.1</h1>
+  <h1 class="center">UpTheNum II Alpha 12</h1>
   <div class="center">
     <p class="center num-display" id="num-display">Wheee! [If you see this the game is broken]</p>
     <p class="center" id="npsCount"></p>
     <div id="tabSwitcher">
-      <button type="button" onclick="tab(0)" class="tabButton">Generators</button>
-      <button type="button" onclick="tab(1)" class="tabButton">Upgrades</button>
-      <button type="button" onclick="tab(2)" class="tabButton">Saving</button>
-      <button type="button" onclick="tab(3)" class="tabButton">Changelog</button>
-      <button type="button" onclick="tab(4)" class="tabButton prestige hidden" id="prestigeTabButton">Prestige</button>
+      <button type="button" onclick="tab(0)">Generators</button>
+      <button type="button" onclick="tab(1)">Upgrades</button>
+      <button type="button" onclick="tab(2)">Options</button>
+      <button type="button" onclick="tab(3)">Changelog</button>
+      <button type="button" onclick="tab(4)" class="prestige hidden" id="prestigeTabButton">Prestige</button>
     </div>
     <div class="tab" id="tab0">
       <button type="button" onclick="increase()" class="mainbutton">Increase the number by 1</button>
@@ -46,9 +46,12 @@
       <button type="button" onclick="exportSave()">Export</button>
       <button type="button" onclick="importSave()">Import</button>
       <button type="button" onclick="clearSave()">Clear Save</button>
+      <button type="button" onclick="setPrecision()" id="precisionChanger">Change Number Precision: 4</button>
     </div>
     <div class="tab" id="tab3" style="display: none">
       <h2>Changelog</h2>
+      <h3>Alpha 12 (2024-12-19)</h3>
+      <p>Added a new mechanic after prestige.<br>Added the option to change number precision.<br>Code quality improved slightly.<br>Minor style changes.</p>
       <h3>Alpha 11.1 (2024-07-02)</h3>
       <p>A weird thing happened where the first line of the Energy upgrade sank down, somehow. So I pushed an update which didn't work on the website although it worked in the file. Then, it fixed itself somehow.</p>
       <h3>Alpha 11 (2024-05-29)</h3>
@@ -69,11 +72,23 @@
     <div class="tab" id="prestigeTab" style="display: none">
       <h2 id="prestigeTabText"></h2>
       <br>
-      <div id="prestigeUpgradeContainer">
-        <button type="button" onclick="buy.prestigeUpgrade(0)" class="upgradeButton prestige" id="pup1"><span class="upgradeText">Keep the first upgrade on reset</span><br><br><span class="upgradeCost" id="pup1cost"></span></button>
-        <button type="button" onclick="buy.prestigeUpgrade(1)" class="upgradeButton prestige" id="pup2"><span class="upgradeText">Generators are boosted by total generators. sqrt((n/30)+1)</span><br><br><span class="upgradeCost" id="pup2cost"></span></button>
-        <button type="button" onclick="buy.prestigeUpgrade(2)" class="upgradeButton prestige" id="pup3"><span class="upgradeText">Generator 1 efficiency x5</span><br><br><span class="upgradeCost" id="pup3cost">Cost: 800</span></button>
-        <button type="button" onclick="buy.prestigeUpgrade(3)" class="upgradeButton prestige" id="pup4"><span class="upgradeText">Generator 2 efficiency x3</span><br><br><span class="upgradeCost" id="pup4cost">Cost: 800</span></button>
+      <div class="subTabSwitcher">
+        <button type="button" onclick="subTab(0,0)">Upgrades</button>
+        <button type="button" onclick="subTab(0,1)" id="collapsingTabBtn">Collapsing</button>
+      </div>
+      <br>
+      <div id="ptab0">
+        <div class="upgradeContainer">
+          <button type="button" onclick="buy.prestigeUpgrade(0)" class="upgradeButton prestige" id="pup1"><span class="upgradeText">Keep the first upgrade on reset</span><br><br><span class="upgradeCost" id="pup1cost"></span></button>
+          <button type="button" onclick="buy.prestigeUpgrade(1)" class="upgradeButton prestige" id="pup2"><span class="upgradeText">Generators are boosted by total generators. sqrt((n/30)+1)</span><br><br><span class="upgradeCost" id="pup2cost"></span></button>
+          <button type="button" onclick="buy.prestigeUpgrade(2)" class="upgradeButton prestige" id="pup3"><span class="upgradeText">Generator 1 efficiency x5</span><br><br><span class="upgradeCost" id="pup3cost">Cost: 800</span></button>
+          <button type="button" onclick="buy.prestigeUpgrade(3)" class="upgradeButton prestige" id="pup4"><span class="upgradeText">Generator 2 efficiency x3</span><br><br><span class="upgradeCost" id="pup4cost">Cost: 800</span></button>
+          <button type="button" onclick="buy.prestigeUpgrade(4)" class="upgradeButton prestige" id="pup5"><span class="upgradeText">Unlock Collapsing</span><br><br><span class="upgradeCost" id="pup5cost">Cost: 800</span></button>
+      	</div>
+      </div>
+      <div id="ptab1" style="display: none">
+        <button class="upgradeButton prestige" onclick="collapse()"><span class="upgradeText">Collapse half of your photons into new resources.</span></button>
+        <h3 id="collapseText0">You have 0 radio photons, producing 0 radio light per second. You have 0 radio light.</h3>
       </div>
     </div>
   </div>

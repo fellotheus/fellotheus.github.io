@@ -55,7 +55,8 @@ var game = {
     { cost: new OmegaNum(1), owned: 0, id: "pup1", permanent: false },
     { cost: new OmegaNum(6), owned: 0, id: "pup2", permanent: false },
     { cost: new OmegaNum(10), owned: 0, id: "pup3", permanent: false },
-    { cost: new OmegaNum(12), owned: 0, id: "pup4", permanent: false }
+    { cost: new OmegaNum(12), owned: 0, id: "pup4", permanent: false },
+    { cost: new OmegaNum(20), owned: 0, id: "pup5", permanent: false },
   ],
   energy: {
     cost: new OmegaNum(10000),
@@ -63,9 +64,16 @@ var game = {
     scale: new OmegaNum(10),
     base: new OmegaNum(10000)
   },
+  collapseResources: [
+    [new OmegaNum(0),new OmegaNum(0)]
+  ],
   generatorBoost: new OmegaNum(1),
-  prestigeCount: 0
+  prestigeCount: 0,
+  prefs: {
+    precision: 4
+  }
 };
+var emptySave = JSON.stringify(game);
 var buy = {
   gen: function (what) {
     if (game.generators[what].cost.gt(game.number)) {
@@ -105,9 +113,8 @@ var buy = {
   },
 };
 var calc = { 
-  //Returners if used on specific event (e.g. click) or a part of calculation.
-  //Setters if value should update every tick
-  generatorBoost: function () {
+  //Setters if updating some variable every tick, returners if there is no variable
+  generatorBoost: function () { //general boost to all generators
     var answer = new OmegaNum(1);
     if (game.upgrades[0].owned) {
       answer = answer.mul(1.5);
@@ -131,7 +138,7 @@ var calc = {
   energyCost: function () {
     game.energy.cost = game.energy.base
       .mul(game.energy.scale.pow(game.energy.owned))
-      .round();
+      .div(calc.collapseEffect(0))
   },
   generatorProduction: function (id) {
     let answer = game.generators[id].power.mul(
@@ -164,8 +171,19 @@ var calc = {
   photonsOnPrestige: function () {
     let answer = game.number.div(2000000).sqrt().sub(1);
     return answer;
+  },
+  collapseProduction: function(id) {
+    return game.collapseResources[id][0];
+  },
+  collapseEffect: function(id) {
+    if (id == 0) {
+      return (game.collapseResources[0][1].add(1).log10().pow(1.2).add(1));
+    }
   }
 };
+
+//GAME ACTIONS
+
 function prestigeReset() {
   game.number = OmegaNum(0);
   for (var i in game.generators) {
@@ -175,6 +193,9 @@ function prestigeReset() {
     if (!game.upgrades[i].permanent) {
       game.upgrades[i].owned = 0;
     }
+  }
+  for (var i in game.collapseResources) {
+    game.collapseResources[i][1] = OmegaNum(0);
   }
   game.energy.owned = OmegaNum(0);
 }
@@ -197,26 +218,20 @@ function prestige() {
 
 }
 
-//EXTRA FUNCTIONS
-
-var timeSinceLastSave = 0;
-
-function transfer(from, to) {
-  //let sample = new Object;
-  for (i in from) {
-    if (typeof from[i] == "object") {
-      transfer(from[i], to[i]);
-    } else {
-      to[i] = from[i];
-    }
-  }
+function collapse() {
+  if (!confirm("Are you sure you want to collapse? Half of your photons will disappear, in exchange for a new resource.")) {return;}
+  game.collapseResources[0][0] = game.collapseResources[0][0].add(game.photons.mul(0.5));
+  game.photons = game.photons.mul(0.5);
 }
+
+//OPTIONS & SAVING
 
 function save() {
   localStorage.setItem("save", JSON.stringify(game));
 }
 
 function load(saveFile = JSON.parse(localStorage.getItem("save"))) {
+  transfer(JSON.parse(emptySave), game);
   transfer(saveFile, game);
   if (game.prestigeCount == 0) {
     get("prestigeTabButton").classList.add("hidden");
@@ -238,6 +253,33 @@ function importSave() {
 function clearSave() {
   localStorage.clear("save");
 }
+
+function setPrecision() {
+  let input = Math.round(Number(prompt("Enter a number between 1 and 10.")));
+  if (isNaN(input)) {return;}
+  if (input < 1 || input > 10) {return;}
+  game.prefs.precision = input;
+}
+
+//EXTRA FUNCTIONS
+
+var timeSinceLastSave = 0;
+
+function transfer(from, to) {
+  //let sample = new Object;
+  for (i in from) {
+    if (typeof from[i] == "object") {
+      try {
+        transfer(from[i], to[i]);
+      } catch {
+        alert("Warning: not found in copy to: " + JSON.stringify(from));
+      }
+    } else {
+      to[i] = from[i];
+    }
+  }
+}
+
 function get(what) {
   return document.getElementById(what);
 }
@@ -284,18 +326,31 @@ function round(what, precision = 4) {
 
 function tab(what) {
   var tabs = ["tab0", "tab1", "tab2", "tab3", "prestigeTab"];
-  for (i = 0; i < tabs.length; i++) {
+  for (i in tabs) {
     get(tabs[i]).style.display = "none";
   }
   get(tabs[what]).style.display = "block";
 }
+
+function subTab(tabList, tabId) {
+  var tabs = [
+    ["ptab0", "ptab1"]
+  ]
+
+  for (i in tabs[tabList]) {
+    get(tabs[tabList][i]).style.display = "none";
+  }
+
+  get(tabs[tabList][tabId]).style.display = "block";
+}
+
 function increase() {
   game.number = game.number.add(calc.Click());
   updateNumber();
 }
 function updateNumber() {
   get("num-display").innerHTML =
-    "<b>" + game.number.toPrecision(4) + "</b> number";
+    "<b>" + game.number.toPrecision(game.prefs.precision) + "</b> number";
 }
 
 /*THE MAIN LOOP*/
@@ -312,11 +367,11 @@ function MainLoop() {
       "Buy Generator " +
       (parseInt(i) + 1) +
       " for " +
-      game.generators[i].cost.toPrecision(4) +
+      game.generators[i].cost.toPrecision(game.prefs.precision) +
       " | Owned: " +
-      game.generators[i].owned.toPrecision(4) +
+      game.generators[i].owned.toPrecision(game.prefs.precision) +
       " | Produces " +
-      calc.generatorProduction(i).toPrecision(4) +
+      calc.generatorProduction(i).toPrecision(game.prefs.precision) +
       " per second"; //update generator
     if (current.cost.gt(game.number)) {
       //CANNOT BUY
@@ -353,7 +408,7 @@ function MainLoop() {
       get(current.id).classList.remove("noBuy");
     }
     get(current.id + "cost").textContent =
-      "Cost: " + current.cost.toPrecision(4);
+      "Cost: " + current.cost.toPrecision(game.prefs.precision);
   }
   for (i = 0; i < game.prestigeUpgrades.length; i++) {
     //iterate upgrades
@@ -375,8 +430,9 @@ function MainLoop() {
       get(current.id).classList.remove("noBuy");
     }
     get(current.id + "cost").textContent =
-      "Cost: " + current.cost.toPrecision(4) + " photons";
+      "Cost: " + current.cost.toPrecision(game.prefs.precision) + " photons";
   }
+
   if (game.energy.cost.gt(game.number)) {
     get("energyBtn").classList.remove("canBuy");
     get("energyBtn").classList.add("noBuy");
@@ -384,8 +440,12 @@ function MainLoop() {
     get("energyBtn").classList.add("canBuy");
     get("energyBtn").classList.remove("noBuy");
   }
-  get("energyCost").textContent = "Cost: " + game.energy.cost.toPrecision(4);
-  get("energyOwned").textContent = "Owned: " + game.energy.owned.toPrecision(4);
+  get("energyCost").textContent = "Cost: " + game.energy.cost.toPrecision(game.prefs.precision);
+  get("energyOwned").textContent = "Owned: " + game.energy.owned.toPrecision(game.prefs.precision);
+
+  for (i = 0; i < game.collapseResources.length; i++) {
+    game.collapseResources[i][1] = game.collapseResources[i][1].add(calc.collapseProduction(i).div(20.0));
+  }
 
   //update small things
 
@@ -402,16 +462,34 @@ function MainLoop() {
   } else {
     get("prestigeButton").classList.add("hidden");
   }
+
   get("prestigeTabText").textContent =
     "You have " +
-    game.photons.toPrecision(4) +
+    game.photons.toPrecision(game.prefs.precision) +
     " photons, giving you a " +
-    game.photons.add(1).sqrt().toPrecision(4) +
+    game.photons.add(1).sqrt().toPrecision(game.prefs.precision) +
     "x boost to all generators.";
 
+  get("collapseText0").textContent =
+    "You have " +
+    game.collapseResources[0][0].toPrecision(game.prefs.precision) +
+    " radio photons, producing " +
+    calc.collapseProduction(0).toPrecision(game.prefs.precision) +
+    " radio light per second. You have " + 
+    game.collapseResources[0][1].toPrecision(game.prefs.precision) +
+    " radio light, translated to a " +
+    calc.collapseEffect(0).toPrecision(game.prefs.precision) +
+    "x reduction in energy cost."
+
+  get("precisionChanger").textContent = "Change Number Precision: " + game.prefs.precision
   //upgrade effects
 
   if (game.prestigeUpgrades[0].owned) {game.upgrades[0].permanent = true}
+  if (game.prestigeUpgrades[4].owned) {
+    get("collapsingTabBtn").classList.remove("hidden");
+  } else {
+    get("collapsingTabBtn").classList.add("hidden");
+  }
 
   //extra
 
@@ -423,7 +501,7 @@ function MainLoop() {
 
   game.number = game.number.add(game.numberPerSecond.div(20.0));
   get("npsCount").innerHTML =
-    "+<b>" + game.numberPerSecond.toPrecision(4) + "</b> per second";
+    "+<b>" + game.numberPerSecond.toPrecision(game.prefs.precision) + "</b> per second";
   game.numberPerSecond = OmegaNum(0);
 }
 

@@ -9,6 +9,13 @@ h1, h2, h3, p {
 button {
   background-color: white;
   color: black;
+  border-style: solid;
+  .upgradeCost {
+    font-size: 13px;
+  }
+  .upgradeText {
+    font-size: 15px;
+  }
 }
 
 .center {
@@ -19,9 +26,21 @@ button {
   display: none;
 }
 
+
 .num-display {
   font-size: 30px;
   margin-bottom: -8px;
+}
+
+.tab {
+  margin-top: 20px;
+}
+
+
+.upgradeContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .mainbutton {
@@ -34,15 +53,6 @@ button {
   margin-bottom: 5px;
   border-radius: 3px;
   border-style: solid;
-}
-.tabButton {
-  padding: 8px 8px;
-  margin-right: 5px;
-  border-radius: 4px;
-  border-style: solid;
-  border-width: 2px;
-  border-color: #222;
-  cursor: pointer;
 }
 
 .energyButton {
@@ -62,6 +72,15 @@ button {
   height: 90px;
 }
 
+.upgradeButton.prestige {
+  padding: 9px;
+  padding-top: 25px;
+  border-radius: 5px;
+  width: 240px;
+  height: 120px;
+  margin: 3px;
+}
+
 .bought {
   background-color: #4a4;
   border-color: #050;
@@ -77,14 +96,6 @@ button {
 }
 .canBuy:hover {
   background-color: #dde4e4;
-}
-
-.upgradeCost {
-  font-size: 13px;
-}
-.upgradeText {
-  font-size: 15px;
-  
 }
 
 .prestigeButton {
@@ -122,29 +133,42 @@ button {
   }
 }
 
-.upgradeButton.prestige {
-  padding: 9px;
-  padding-top: 25px;
-  border-radius: 5px;
-  width: 240px;
-  height: 120px;
-  margin: 3px;
-}
-
-#prestigeUpgradeContainer {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
 #tabSwitcher {
   background-color: #0112;
   border-radius: 5px;
   padding: 5px;
+  button {
+    padding: 8px 8px;
+    margin-right: 5px;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #222;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #DDD;
+  }
 }
-.tab {
-  margin-top: 20px;
+
+
+.subTabSwitcher {
+  border-radius: 5px;
+  padding: 5px;
+  button {
+    padding: 8px 8px;
+    margin-right: 5px;
+    border-radius: 4px;
+    border-style: solid;
+    border-width: 2px;
+    border-color: #222;
+    cursor: pointer;
+  }
+  button:hover {
+    background-color: #DDD;
+  }
 }
+
 #tab0 {
   background-color: #00111117;
   padding: 5px;
