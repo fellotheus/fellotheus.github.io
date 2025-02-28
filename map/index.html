@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html onmousemove="mouseEvent(event)" onmouseup="mapRelease();">
+<head>
+  <title>Map Demo</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="styles/style.css">
+</head>
+<body>
+  <div style="display: none">
+    <img id="tree" src="textures/tree.png">
+  </div>
+  <canvas id="map" width="1200" height="400" style="border:1px solid black" onmousedown="mapClick();"></canvas>
+
+  <button onclick="mapCoords = [mapCoords[0]-20,mapCoords[1]];drawMap()"><</button>
+  <button onclick="mapCoords = [mapCoords[0]+20,mapCoords[1]];drawMap()">></button>
+  <button onclick="mapCoords = [mapCoords[0],mapCoords[1]-20];drawMap()">^</button>
+  <button onclick="mapCoords = [mapCoords[0],mapCoords[1]+20];drawMap()">v</button>
+
+  <script src="perlin.js"></script>
+  <script src="world.js"></script>
+  <script src="map.js"></script>
+</body>
+</html> 
