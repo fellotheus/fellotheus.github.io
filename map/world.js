@@ -2,6 +2,9 @@ const tileTypes = {
   water: {
     color: "#0858cf"
   },
+  coast: {
+    color: "#1779d4"
+  },
   grass: {
     color: "#55bd39"
   },
@@ -65,9 +68,11 @@ function generateTile(X,Y) {
   if (typeof world[X] != "object") {world[X] = []};
   if (typeof world[X][Y] == "object") {return};
   let randomNumber = Math.random()
-  if (sampleElevation(X,Y)<0.1) {
+  if (sampleElevation(X,Y)<-0.1) {
     world[X][Y] = new Tile("water");
-  } else if (sampleElevation(X,Y)>0.8) {
+  } else if (sampleElevation(X,Y)<0.1) {
+    world[X][Y] = new Tile("coast");
+  } else if (sampleElevation(X,Y)>0.9) {
     world[X][Y] = new Tile("mountain");
   } else if (sampleRainfall(X,Y) > 0) {
     world[X][Y] = new Tile("forest");
