@@ -54,9 +54,11 @@ var game = {
   prestigeUpgrades: [
     { cost: new OmegaNum(1), owned: 0, id: "pup1", permanent: false },
     { cost: new OmegaNum(6), owned: 0, id: "pup2", permanent: false },
-    { cost: new OmegaNum(10), owned: 0, id: "pup3", permanent: false },
-    { cost: new OmegaNum(12), owned: 0, id: "pup4", permanent: false },
-    { cost: new OmegaNum(20), owned: 0, id: "pup5", permanent: false },
+    { cost: new OmegaNum(30), owned: 0, id: "pup3", permanent: false },
+    { cost: new OmegaNum(35), owned: 0, id: "pup4", permanent: false },
+    { cost: new OmegaNum(80), owned: 0, id: "pup5", permanent: false },
+    { cost: new OmegaNum(150), owned: 0, id: "pup6", permanent: false },
+    { cost: new OmegaNum(300), owned: 0, id: "pup7", permanent: false }
   ],
   energy: {
     cost: new OmegaNum(10000),
@@ -64,14 +66,18 @@ var game = {
     scale: new OmegaNum(10),
     base: new OmegaNum(10000)
   },
-  collapseResources: [
+  collapseResources: [ // ID - Photons - Light
+    [new OmegaNum(0),new OmegaNum(0)],
     [new OmegaNum(0),new OmegaNum(0)]
   ],
+  collapseLevel: 0,
   generatorBoost: new OmegaNum(1),
   prestigeCount: 0,
   prefs: {
-    precision: 4
-  }
+    precision: 4,
+    prestigeConfirmation: true
+  },
+  timeSpentThisPrestige: 0
 };
 var emptySave = JSON.stringify(game);
 var buy = {
@@ -122,6 +128,9 @@ var calc = {
     if (game.prestigeUpgrades[1].owned) {
       answer = answer.mul(game.generators[0].owned.add(game.generators[1].owned).add(game.generators[2].owned).add(game.generators[3].owned).mul(1/40).add(1).sqrt());
     }
+    if (game.prestigeUpgrades[5].owned) {
+      answer = answer.mul(((game.timeSpentThisPrestige/300)/+1)**0.5);
+    }
     answer = answer.mul(OmegaNum.pow(2, game.energy.owned));
     answer = answer.mul(game.photons.add(1).sqrt());
     game.generatorBoost = answer;
@@ -131,9 +140,11 @@ var calc = {
     return answer;
   },
   generatorCost: function (id) {
-    game.generators[id].cost = game.generators[id].base
-      .mul(game.generators[id].scale.pow(game.generators[id].owned))
-      .round();
+    let answer = game.generators[id].base.mul(game.generators[id].scale.pow(game.generators[id].owned))
+    if (game.collapseLevel >= 1) {
+      answer = answer.div(calc.collapseEffect(1));
+    }
+    game.generators[id].cost = answer.round();;
   },
   energyCost: function () {
     game.energy.cost = game.energy.base
@@ -179,6 +190,9 @@ var calc = {
     if (id == 0) {
       return (game.collapseResources[0][1].add(1).log10().pow(1.2).add(1));
     }
+    if (id == 1) {
+      return (game.collapseResources[1][1].div(100).add(1).pow(0.35));
+    }
   }
 };
 
@@ -204,23 +218,31 @@ function prestige() {
     return;
   }
 
-  if (!confirm("Are you sure? Prestiging will reset all your previous progress.\n(I recommend you to be able to gain at least 1-2 photons on your first prestige.)")) {
-    return;
+  if (game.prefs.prestigeConfirmation) {
+    if (!confirm("Are you sure? Prestiging will reset all your previous progress.\n(I recommend you to be able to gain at least 1-2 photons on your first prestige.)")) {
+      return;
+    }
   }
-
   game.photons = game.photons.add(calc.photonsOnPrestige());
   game.prestigeCount++;
   prestigeReset();
 
-  alert("You collapse your current number, leading to a massive explosion destroying all your generators, upgrades, and energy. In the process, you gained some photons, which will boost your new generators.")
+  if (game.prefs.prestigeConfirmation) {
+    alert("You collapse your current number, leading to a massive explosion destroying all your generators, upgrades, and energy. In the process, you gained some photons, which will boost your new generators.")
+  }
 
   get("prestigeTabButton").classList.remove("hidden"); //unlock
 
 }
 
 function collapse() {
-  if (!confirm("Are you sure you want to collapse? Half of your photons will disappear, in exchange for a new resource.")) {return;}
+  if (!confirm("Are you sure you want to collapse? Half of your photons will disappear and will be converted into new forms.")) {return;}
   game.collapseResources[0][0] = game.collapseResources[0][0].add(game.photons.mul(0.5));
+  for (i=1; i<=game.collapseLevel; i++) {
+    let photonsCarriedOver = new OmegaNum(game.photons.mul(0.5).mul(OmegaNum(0.5).pow(i)));
+    game.collapseResources[i-1][0] = game.collapseResources[i-1][0].sub(photonsCarriedOver);
+    game.collapseResources[i][0] = game.collapseResources[i][0].add(photonsCarriedOver)
+  }
   game.photons = game.photons.mul(0.5);
 }
 
@@ -259,6 +281,10 @@ function setPrecision() {
   if (isNaN(input)) {return;}
   if (input < 1 || input > 10) {return;}
   game.prefs.precision = input;
+}
+
+function togglePrestigeConfirmation() {
+  game.prefs.prestigeConfirmation = !game.prefs.prestigeConfirmation;
 }
 
 //EXTRA FUNCTIONS
@@ -447,12 +473,18 @@ function MainLoop() {
     game.collapseResources[i][1] = game.collapseResources[i][1].add(calc.collapseProduction(i).div(20.0));
   }
 
-  //update small things
+  if (game.prestigeUpgrades[6].owned == 1) {
+    game.collapseLevel = 1;
+  } else {
+    game.collapseLevel = 0;
+  }
+
+  //update html
 
   if (game.number.gte(2000000)) {
     get("prestigeBottomText").innerHTML =
       "Gain " +
-      calc.photonsOnPrestige().toPrecision(3) +
+      calc.photonsOnPrestige().toPrecision(game.prefs.precision) +
       " photons";
   } else {
     get("prestigeBottomText").innerHTML = "Requires 2e6 number";
@@ -480,8 +512,26 @@ function MainLoop() {
     " radio light, translated to a " +
     calc.collapseEffect(0).toPrecision(game.prefs.precision) +
     "x reduction in energy cost."
+  get("collapseText1").textContent =
+    "You have " +
+    game.collapseResources[1][0].toPrecision(game.prefs.precision) +
+    " microwave photons, producing " +
+    calc.collapseProduction(1).toPrecision(game.prefs.precision) +
+    " microwave light per second. You have " + 
+    game.collapseResources[1][1].toPrecision(game.prefs.precision) +
+    " microwave light, translated to a " +
+    calc.collapseEffect(1).toPrecision(game.prefs.precision) +
+    "x reduction in generator cost."
 
-  get("precisionChanger").textContent = "Change Number Precision: " + game.prefs.precision
+  if (game.collapseLevel < 1) {
+    get("collapseText1").classList.add("hidden")
+  } else {
+    get("collapseText1").classList.remove("hidden")
+  }
+
+  get("precisionChanger").textContent = "Change Number Precision: " + game.prefs.precision;
+  get("prestigeToggle").textContent = "Toggle Prestige Confirmation (" + (game.prefs.prestigeConfirmation ? "ON)" : "OFF)");
+  game.timeSpentThisPrestige += 1/20;
   //upgrade effects
 
   if (game.prestigeUpgrades[0].owned) {game.upgrades[0].permanent = true}

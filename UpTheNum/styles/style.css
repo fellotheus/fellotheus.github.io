@@ -7,16 +7,29 @@ h1, h2, h3, p {
 }
 
 button {
-  background-color: white;
-  color: black;
-  border-style: solid;
   .upgradeCost {
     font-size: 13px;
   }
   .upgradeText {
     font-size: 15px;
   }
+  min-height: 12px;
+  transition: 0.2s;
+
 }
+
+button:not(.bought):not(.noBuy) {
+  background-color: #002852;
+  color: #eee;
+  border-style: solid;
+  border-color: #248;
+}
+
+button:not(.bought):not(.noBuy):hover {
+  color: white;
+  background-color: #357;
+}
+
 
 .center {
   text-align: center;
@@ -49,6 +62,7 @@ button {
   cursor: pointer;
 }
 .genButton {
+  width: 530px;
   padding: 6px 6px;
   margin-bottom: 5px;
   border-radius: 3px;
@@ -90,12 +104,11 @@ button {
   border-color: #500;
 }
 .canBuy {
-  background-color: #fff;
   cursor: pointer;
   transition: 0.2s;
 }
 .canBuy:hover {
-  background-color: #dde4e4;
+  background-color: #357;
 }
 
 .prestigeButton {
@@ -143,11 +156,12 @@ button {
     border-radius: 4px;
     border-style: solid;
     border-width: 2px;
-    border-color: #222;
     cursor: pointer;
+    min-height: 22px;
+    transition: 0.2s;
   }
   button:hover {
-    background-color: #DDD;
+    background-color: #357;
   }
 }
 
@@ -161,12 +175,9 @@ button {
     border-radius: 4px;
     border-style: solid;
     border-width: 2px;
-    border-color: #222;
     cursor: pointer;
   }
-  button:hover {
-    background-color: #DDD;
-  }
+
 }
 
 #tab0 {

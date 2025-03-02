@@ -11,7 +11,7 @@
 
 
 
-  <h1 class="center">UpTheNum II Alpha 12</h1>
+  <h1 class="center">UpTheNum II Alpha 13</h1>
   <div class="center">
     <p class="center num-display" id="num-display">Wheee! [If you see this the game is broken]</p>
     <p class="center" id="npsCount"></p>
@@ -47,9 +47,12 @@
       <button type="button" onclick="importSave()">Import</button>
       <button type="button" onclick="clearSave()">Clear Save</button>
       <button type="button" onclick="setPrecision()" id="precisionChanger">Change Number Precision: 4</button>
+      <button type="button" onclick="togglePrestigeConfirmation()" id="prestigeToggle">Change Number Precision: 4</button>
     </div>
     <div class="tab" id="tab3" style="display: none">
       <h2>Changelog</h2>
+      <h3>Alpha 13 (2025-03-02)</h3>
+      <p>The second collapse resource has been added.<br>Changed the look of the game.<br>You can now toggle the prestige confirmation.<br>Added some new prestige upgrades.<br>Modified the pricing of most prestige upgrades.<br>Fixed: Photons on prestige not rounded based on precision setting</p>
       <h3>Alpha 12 (2024-12-19)</h3>
       <p>Added a new mechanic after prestige.<br>Added the option to change number precision.<br>Code quality improved slightly.<br>Minor style changes.</p>
       <h3>Alpha 11.1 (2024-07-02)</h3>
@@ -83,12 +86,17 @@
           <button type="button" onclick="buy.prestigeUpgrade(1)" class="upgradeButton prestige" id="pup2"><span class="upgradeText">Generators are boosted by total generators. sqrt((n/30)+1)</span><br><br><span class="upgradeCost" id="pup2cost"></span></button>
           <button type="button" onclick="buy.prestigeUpgrade(2)" class="upgradeButton prestige" id="pup3"><span class="upgradeText">Generator 1 efficiency x5</span><br><br><span class="upgradeCost" id="pup3cost">Cost: 800</span></button>
           <button type="button" onclick="buy.prestigeUpgrade(3)" class="upgradeButton prestige" id="pup4"><span class="upgradeText">Generator 2 efficiency x3</span><br><br><span class="upgradeCost" id="pup4cost">Cost: 800</span></button>
+      	</div>
+        <div class="upgradeContainer">
           <button type="button" onclick="buy.prestigeUpgrade(4)" class="upgradeButton prestige" id="pup5"><span class="upgradeText">Unlock Collapsing</span><br><br><span class="upgradeCost" id="pup5cost">Cost: 800</span></button>
+          <button type="button" onclick="buy.prestigeUpgrade(5)" class="upgradeButton prestige" id="pup6"><span class="upgradeText" style="font-size: 12px;">Gain a multipler to production based on time spent this prestige. sqrt((seconds/300)+1)</span><br><br><span class="upgradeCost" id="pup6cost">Cost: 800</span></button>
+          <button type="button" onclick="buy.prestigeUpgrade(6)" class="upgradeButton prestige" id="pup7"><span class="upgradeText">Unlock the second collapse resource</span><br><br><span class="upgradeCost" id="pup7cost">Cost: 800</span></button>
       	</div>
       </div>
       <div id="ptab1" style="display: none">
         <button class="upgradeButton prestige" onclick="collapse()"><span class="upgradeText">Collapse half of your photons into new resources.</span></button>
         <h3 id="collapseText0">You have 0 radio photons, producing 0 radio light per second. You have 0 radio light.</h3>
+        <h3 id="collapseText1"></h3>
       </div>
     </div>
   </div>
